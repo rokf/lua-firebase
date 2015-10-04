@@ -9,6 +9,16 @@ local Firebase = {}
 
 Firebase.ROOT_URL = ''
 
+function Firebase:encode(data)
+  -- return data table in json string format
+  return cjson.encode(data)
+end
+
+function Firebase:decode(json_string)
+  -- take json_string and return lua table
+  return cjson.decode(json_string)
+end
+
 -- Firebase API calls
 
 function Firebase:init(root_url)
@@ -57,6 +67,12 @@ function Firebase:put(path, data)
          ["content-type"] = "application/x-www-form-urlencoded",
       }
   })
+end
+
+function Firebase:download(path,filename)
+  local file = io.open(filename, "w")
+  file:write(self:get(path, false))
+  file:close()
 end
 
 function Firebase:get(path, do_decoding)
