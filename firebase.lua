@@ -76,7 +76,7 @@ function Firebase:download(path,filename)
 end
 
 function Firebase:get(path, do_decoding)
-  if path then
+  if path ~= nil or path == "" then
     local result = https.request(self.ROOT_URL..path..'.json')
     result = string.sub(result,1,string.find(result,"}[^}]*$"))
     if do_decoding == true then
