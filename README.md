@@ -15,6 +15,6 @@ Check the wiki for examples.
 
 ### ZeroBrane Studio API
 
-There is an API script included that you can use for autocomplete in ZBS :smile:
+There is an auto-complete API script with install instructions available [here](https://github.com/rfajfar/zerobrane-studio-apis).
 
-##AUTH not yet supported :snail:
+> Note: Authentication is not yet supported in this release.
