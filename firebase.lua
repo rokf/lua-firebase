@@ -75,6 +75,13 @@ function Firebase:download(path,filename)
   file:close()
 end
 
+function Firebase:upload(path, filename)
+  local file = io.open(filename, "r")
+  local content_string = file:read("*all")
+  file:close()
+  https.request(self.ROOT_URL..path..'.json', content_string)
+end
+
 function Firebase:get(path, do_decoding)
   if path ~= nil or path == "" then
     local result = https.request(self.ROOT_URL..path..'.json')
