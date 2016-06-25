@@ -1,5 +1,5 @@
 
--- https://github.com/mikexstudios/python-firebase/blob/master/firebase/__init__.py
+-- Inspired by the Python binding
 
 local https = require("ssl.https")
 local cjson = require("cjson")
@@ -9,25 +9,16 @@ local Firebase = {}
 
 Firebase.ROOT_URL = ''
 
-function Firebase:encode(data)
-  -- return data table in json string format
+function Firebase:encode(data)  -- return data table in json string format
   return cjson.encode(data)
 end
 
-function Firebase:decode(json_string)
-  -- take json_string and return lua table
+function Firebase:decode(json_string)  -- take json_string and return lua table
   return cjson.decode(json_string)
 end
 
--- Firebase API calls
-
-function Firebase:init(root_url)
-  --  self.ROOT_URL = string.sub(root_url, 1, -2)..'.json'
-  if string.sub(root_url,-1) == '/' then
-    self.ROOT_URL = string.sub(root_url, 1, -2)
-  else
-    self.ROOT_URL = root_url
-  end
+function Firebase:init(name)
+  self.ROOT_URL = string.format("https://%s.firebaseio.com/", name)
 end
 
 function Firebase:set(path, data)
@@ -83,23 +74,12 @@ function Firebase:upload(path, filename)
 end
 
 function Firebase:get(path, do_decoding)
-  if path ~= nil or path == "" then
-    local result = https.request(self.ROOT_URL..path..'.json')
-    result = string.sub(result,1,string.find(result,"}[^}]*$"))
-    if do_decoding == true then
-      return cjson.decode(result) -- return as a table
-    else
-      return result -- return as json string
-    end
-  else
-    local result = https.request(self.ROOT_URL..'.json')
-    result = string.sub(result,1,string.find(result,"}[^}]*$"))
-    if do_decoding == true then
-      return cjson.decode(result) -- return as a table
-    else
-      return result -- return as json string
-    end
+  local URL = self.ROOT_URL .. path .. ".json"
+  local result = https.request(URL)
+  if do_decoding then
+    return self:decode(result), "table"
   end
+  return result, "string"
 end
 
 function Firebase:post(path, data)
