@@ -1,20 +1,10 @@
-A Firebase binding which uses **luasec** for **https**.
 
-You will need this
+![Firebase logo](https://lh3.googleusercontent.com/-whXBCDVxIto/Vz2Rsyz-UjI/AAAAAAAAiJc/UjvR-M2b9tY5SyKFkDY6Q_MbusEINRXkQ/s506/Firebase_16-logo.png)
 
-```
-sudo luarocks install LuaSec
-sudo luarocks install lua-cjson
-```
+A Firebase REST binding in Lua
 
-and the `firebase.lua` file which is **not yet** on LuaRocks. Just get it from the repository.
+### Requirements
+**LuaSec** and **lua-cjson** from LuaRocks are required for this library to work.
 
-### How to use?
-
-Check the wiki for examples.
-
-### ZeroBrane Studio API
-
-There is an auto-complete API script with install instructions available [here](https://github.com/rfajfar/zerobrane-studio-apis).
-
-> Note: Authentication is not yet supported in this release.
+### Usage
+The wiki contains examples.
