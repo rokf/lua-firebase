@@ -1,7 +1,8 @@
 package = "firebase"
 version = "1.0-1"
 source = {
-  url = "https://github.com/rokf/lua-firebase"
+  url = "https://github.com/rokf/lua-firebase",
+  tag = "v1.0"
 }
 
 description = {
