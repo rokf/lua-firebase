@@ -125,6 +125,40 @@ local delete_account = function (idtoken,key)
   return cjson.decode(s:get_body_as_string())
 end
 
+local change_password = function (idtoken,password,key)
+  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/json",false)
+  local datastring = cjson.encode({
+    idToken = idtoken,
+    password = password,
+    returnSecureToken = true
+  })
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
+  return cjson.decode(s:get_body_as_string())
+end
+
+local change_email = function (idtoken,email,key)
+  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/json",false)
+  local datastring = cjson.encode({
+    idToken = idtoken,
+    email = email,
+    returnSecureToken = true
+  })
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
+  return cjson.decode(s:get_body_as_string())
+end
+
 return {
   get = get,
   put = put,
@@ -135,5 +169,7 @@ return {
   signin_email = signin_email,
   signup_email = signup_email,
   get_new_idtoken = get_new_idtoken,
-  delete_account = delete_account
+  delete_account = delete_account,
+  change_password = change_password,
+  change_email = change_email
 }

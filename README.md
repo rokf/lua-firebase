@@ -32,10 +32,12 @@ signin_email = function (email,password,key)
 signup_email = function (email,password,key)
 get_new_idtoken = function (rtoken,key)
 delete_account = function (idtoken,key)
+change_password = function (idtoken,password,key)
+change_email = function (idtoken,email,key)
 ```
 
 #### Auth explanations
-- `email` - user email (string)
+- `email` - users email (string)
 - `password` - user password (string)
 - `key` - Firebase project KEY (string)
 - `rtoken` - `refresh_token`, used to gain a new ID token (string)
