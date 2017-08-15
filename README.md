@@ -31,12 +31,12 @@ delete = function (pid,path,auth)
 signin_email = function (email,password,key)
 signup_email = function (email,password,key)
 get_new_idtoken = function (rtoken,key)
+delete_account = function (idtoken,key)
 ```
 
 #### Auth explanations
-```
 - `email` - user email (string)
 - `password` - user password (string)
 - `key` - Firebase project KEY (string)
 - `rtoken` - `refresh_token`, used to gain a new ID token (string)
-```
+- `idtoken` - user ID token (string)

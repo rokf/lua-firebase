@@ -110,6 +110,21 @@ local get_new_idtoken = function (rtoken,key)
   return cjson.decode(s:get_body_as_string())
 end
 
+local delete_account = function (idtoken,key)
+  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/json",false)
+  local datastring = cjson.encode({
+    idToken = idtoken
+  })
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return cjson.decode(s:get_body_as_string())
+end
+
 return {
   get = get,
   put = put,
@@ -119,5 +134,6 @@ return {
   -- auth related
   signin_email = signin_email,
   signup_email = signup_email,
-  get_new_idtoken = get_new_idtoken
+  get_new_idtoken = get_new_idtoken,
+  delete_account = delete_account
 }
