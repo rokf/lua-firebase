@@ -14,7 +14,7 @@ local get = function (pid,path,dflag,auth)
   if auth then authstring = "?access_token=" .. auth end
   local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
   local h,s = request.new_from_uri(uri):go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   if dflag then return cjson.decode(s:get_body_as_string()) end -- table
   return s:get_body_as_string() -- JSON string
 end
@@ -31,20 +31,20 @@ local upload_backend = function (method,pid,path,data,eflag,auth)
   r.headers:upsert("content-length",tostring(#datastring),false)
   r:set_body(datastring)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return s:get_body_as_string()
 end
 
 local put = function (pid,path,data,eflag,auth)
-  upload_backend("PUT",pid,path,data,eflag,auth)
+  return upload_backend("PUT",pid,path,data,eflag,auth)
 end
 
 local post = function (pid,path,data,eflag,auth)
-  upload_backend("POST",pid,path,data,eflag,auth)
+  return upload_backend("POST",pid,path,data,eflag,auth)
 end
 
 local patch = function (pid,path,data,eflag,auth)
-  upload_backend("PATCH",pid,path,data,eflag,auth)
+  return upload_backend("PATCH",pid,path,data,eflag,auth)
 end
 
 local delete = function (pid,path,auth)
@@ -54,7 +54,7 @@ local delete = function (pid,path,auth)
   local r = request.new_from_uri(uri)
   r.headers:upsert(":method","DELETE",false)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return s:get_body_as_string()
 end
 
@@ -73,7 +73,7 @@ local signin_email = function (email,password,key)
   r.headers:upsert("content-length",tostring(#datastring),false)
   r:set_body(datastring)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return cjson.decode(s:get_body_as_string())
 end
 
@@ -90,7 +90,7 @@ local signup_email = function (email,password,key)
   r.headers:upsert("content-length",tostring(#datastring),false)
   r:set_body(datastring)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return cjson.decode(s:get_body_as_string())
 end
 
@@ -106,7 +106,7 @@ local get_new_idtoken = function (rtoken,key)
   -- r.headers:upsert("content-length",tostring(#datastring),false)
   r:set_body(datastring)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return cjson.decode(s:get_body_as_string())
 end
 
@@ -121,7 +121,7 @@ local delete_account = function (idtoken,key)
   r.headers:upsert("content-length",tostring(#datastring),false)
   r:set_body(datastring)
   local h,s = r:go()
-  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
   return cjson.decode(s:get_body_as_string())
 end
 
