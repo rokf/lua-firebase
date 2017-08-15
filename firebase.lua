@@ -1,89 +1,67 @@
 
-local https = require("ssl.https")
-local cjson = require("cjson")
-local ltn12 = require("ltn12")
+local cjson = require 'cjson'
+local request = require 'http.request'
+-- local headers = require 'http.headers'
 
-local Firebase = {}
-
-Firebase.ROOT_URL = ''
-
-function Firebase:encode(data) -- return data table in json string format
-  return cjson.encode(data)
-end
-
-function Firebase:decode(json_string) -- take json_string and return lua table
-  return cjson.decode(json_string)
-end
-
-function Firebase:init(name) -- INIT
-  self.ROOT_URL = string.format("https://%s.firebaseio.com/", name)
-end
-
-function Firebase:init_manual(full_url)
-  self.ROOT_URL = full_url
-end
-
-function Firebase:set(path, data) -- SET
-  local encoded = cjson.encode(data)
-  https.request({
-    url = self.ROOT_URL..path..'.json',
-    method = "PUT",
-    sink = ltn12.sink.table({}),
-    source = ltn12.source.string(encoded),
-    headers = {
-      ["content-length"] = #encoded,
-      ["content-type"] = "application/x-www-form-urlencoded",
-    }
-  })
-end
-
-function Firebase:put(path, data) -- ALIAS
-  self:set(path,data)
-end
-
-function Firebase:putraw(path, rawstring) -- PUT RAW JSON
-  https.request({
-    url = self.ROOT_URL..path..'.json',
-    method = "PUT",
-    sink = ltn12.sink.table({}),
-    source = ltn12.source.string(rawstring),
-    headers = {
-      ["content-length"] = #rawstring,
-      ["content-type"] = "application/x-www-form-urlencoded",
-    }
-  })
-end
-
-function Firebase:push(path, data) -- PUSH
-  https.request(self.ROOT_URL..path..'.json', cjson.encode(data))
-end
-
-function Firebase:post(path, data) -- ALIAS
-  self:push(path,data)
-end
-
-function Firebase:pushraw(path, rawstring) -- PUSH RAW JSON
-  https.request(self.ROOT_URL..path..'.json', rawstring)
-end
-
-function Firebase:remove(path) -- REMOVE
-  https.request({
-    url = self.ROOT_URL..path..'.json',
-    method = "DELETE"
-  })
-end
-
-function Firebase:delete(path) -- ALIAS
-  self:remove(path)
-end
-
-function Firebase:get(path, do_decoding) -- GET
-  local URL = self.ROOT_URL .. path .. ".json"
-  local result = https.request(URL)
-  if do_decoding then
-    return self:decode(result), "table"
+local print_headers = function (h)
+  for name, value, never_index in h:each() do
+    print(name, value, never_index)
   end
-  return result, "string"
 end
 
-return Firebase
+local get = function (pid,path,dflag,auth)
+  local authstring = ""
+  if auth then authstring = "?access_token=" .. auth end
+  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
+  local h,s = request.new_from_uri(uri):go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  if dflag then return cjson.decode(s:get_body_as_string()) end -- table
+  return s:get_body_as_string() -- JSON string
+end
+
+local upload_backend = function (method,pid,path,data,eflag,auth)
+  local authstring = ""
+  if auth then authstring = "?access_token=" .. auth end
+  local datastring = ""
+  if eflag then datastring = cjson.encode(data) else datastring = data end
+  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method",method,false)
+  r.headers:upsert("content-type","application/json",false)
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return s:get_body_as_string()
+end
+
+local put = function (pid,path,data,eflag,auth)
+  upload_backend("PUT",pid,path,data,eflag,auth)
+end
+
+local post = function (pid,path,data,eflag,auth)
+  upload_backend("POST",pid,path,data,eflag,auth)
+end
+
+local patch = function (pid,path,data,eflag,auth)
+  upload_backend("PATCH",pid,path,data,eflag,auth)
+end
+
+local delete = function (pid,path,auth)
+  local authstring = ""
+  if auth then authstring = "?access_token=" .. auth end
+  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","DELETE",false)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return s:get_body_as_string()
+end
+
+return {
+  get = get,
+  put = put,
+  post = post,
+  patch = patch,
+  delete = delete
+}
