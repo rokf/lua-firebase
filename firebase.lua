@@ -58,10 +58,66 @@ local delete = function (pid,path,auth)
   return s:get_body_as_string()
 end
 
+-- auth REST API --
+
+local signin_email = function (email,password,key)
+  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/json",false)
+  local datastring = cjson.encode({
+    email = email,
+    password = password,
+    returnSecureToken = true
+  })
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return cjson.decode(s:get_body_as_string())
+end
+
+local signup_email = function (email,password,key)
+  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/json",false)
+  local datastring = cjson.encode({
+    email = email,
+    password = password,
+    returnSecureToken = true
+  })
+  r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return cjson.decode(s:get_body_as_string())
+end
+
+local get_new_idtoken = function (rtoken,key)
+  local uri = string.format("https://securetoken.googleapis.com/v1/token?key=%s",key)
+  local r = request.new_from_uri(uri)
+  r.headers:upsert(":method","POST",false)
+  r.headers:upsert("content-type","application/x-www-form-urlencoded",false)
+  local datastring = cjson.encode({
+    grant_type = "refresh_token",
+    refresh_token = rtoken
+  })
+  -- r.headers:upsert("content-length",tostring(#datastring),false)
+  r:set_body(datastring)
+  local h,s = r:go()
+  if h:get(":status") ~= "200" then error(s:get_body_as_string()) end
+  return cjson.decode(s:get_body_as_string())
+end
+
 return {
   get = get,
   put = put,
   post = post,
   patch = patch,
-  delete = delete
+  delete = delete,
+  -- auth related
+  signin_email = signin_email,
+  signup_email = signup_email,
+  get_new_idtoken = get_new_idtoken
 }
