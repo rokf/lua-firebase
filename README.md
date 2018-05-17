@@ -9,6 +9,9 @@ sudo luarocks install http
 sudo luarocks install lua-cjson
 ```
 
+**Note:** This module will not work on platforms where lua-http (`http`) can't be installed on.
+It only works on unix-like operating systems (Linux, OSX, ...).
+
 #### Functions
 ```
 get = function (pid,path,dflag,auth)
