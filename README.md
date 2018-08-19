@@ -1,5 +1,4 @@
-
-![Firebase logo](https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png) ![Lua logo](http://www.rozek.mobi/Lua/Lua-Logo_64x64.png)
+![Firebase logo](https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png)
 
 A Firebase REST database binding for Lua
 

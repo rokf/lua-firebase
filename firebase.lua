@@ -1,4 +1,3 @@
-
 local cjson = require 'cjson'
 local request = require 'http.request'
 -- local headers = require 'http.headers'
@@ -10,22 +9,28 @@ local print_headers = function (h)
 end
 
 local get = function (pid,path,dflag,auth)
-  local authstring = ""
-  if auth then authstring = "?access_token=" .. auth end
-  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
-  local h,s = request.new_from_uri(uri):go()
+  local h,s = request.new_from_uri(
+    string.format(
+      "https://%s.firebaseio.com/%s.json%s",
+      pid,
+      path,
+      auth and "?access_token=" .. auth or ""
+    )
+  ):go()
   if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
-  if dflag then return cjson.decode(s:get_body_as_string()) end -- table
-  return s:get_body_as_string() -- JSON string
+  return dflag and cjson.decode(s:get_body_as_string()) or s:get_body_as_string()
 end
 
 local upload_backend = function (method,pid,path,data,eflag,auth)
-  local authstring = ""
-  if auth then authstring = "?access_token=" .. auth end
-  local datastring = ""
-  if eflag then datastring = cjson.encode(data) else datastring = data end
-  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
-  local r = request.new_from_uri(uri)
+  local datastring = eflag and cjson.encode(data) or data
+  local r = request.new_from_uri(
+    string.format(
+      "https://%s.firebaseio.com/%s.json%s",
+      pid,
+      path,
+      auth and "?access_token=" .. auth or ""
+    )
+  )
   r.headers:upsert(":method",method,false)
   r.headers:upsert("content-type","application/json",false)
   r.headers:upsert("content-length",tostring(#datastring),false)
@@ -48,10 +53,14 @@ local patch = function (pid,path,data,eflag,auth)
 end
 
 local delete = function (pid,path,auth)
-  local authstring = ""
-  if auth then authstring = "?access_token=" .. auth end
-  local uri = string.format("https://%s.firebaseio.com/%s.json%s",pid,path,authstring)
-  local r = request.new_from_uri(uri)
+  local r = request.new_from_uri(
+    string.format(
+      "https://%s.firebaseio.com/%s.json%s",
+      pid,
+      path,
+      auth and "?access_token=" .. auth or ""
+    )
+  )
   r.headers:upsert(":method","DELETE",false)
   local h,s = r:go()
   if h:get(":status") ~= "200" then return nil, h:get(":status"), s:get_body_as_string() end
@@ -61,8 +70,13 @@ end
 -- auth REST API --
 
 local idtoolkit_reqcore = function (appstr,t,key)
-  local uri = string.format("https://www.googleapis.com/identitytoolkit/v3/relyingparty/%s?key=%s",appstr,key)
-  local r = request.new_from_uri(uri)
+  local r = request.new_from_uri(
+    string.format(
+      "https://www.googleapis.com/identitytoolkit/v3/relyingparty/%s?key=%s",
+      appstr,
+      key
+    )
+  )
   r.headers:upsert(":method","POST",false)
   r.headers:upsert("content-type","application/json",false)
   local datastring = cjson.encode(t)
@@ -94,8 +108,7 @@ local change_email = function (idtoken,email,key)
 end
 
 local get_new_idtoken = function (rtoken,key)
-  local uri = string.format("https://securetoken.googleapis.com/v1/token?key=%s",key)
-  local r = request.new_from_uri(uri)
+  local r = request.new_from_uri(string.format("https://securetoken.googleapis.com/v1/token?key=%s",key))
   r.headers:upsert(":method","POST",false)
   r.headers:upsert("content-type","application/x-www-form-urlencoded",false)
   local datastring = cjson.encode({
